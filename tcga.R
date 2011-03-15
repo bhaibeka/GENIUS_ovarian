@@ -1,5 +1,6 @@
 rm(list = ls(all = TRUE))
 
+library(biomaRt)
 library(frma)
 library(affy)
 library(hgu133afrmavecs)
@@ -49,15 +50,43 @@ demo$age <- (demo$days_to_birth %/% (-365))
 demo$e.os <- as.numeric(demo$vital_status == "DECEASED")
 demo$t.os <- demo$days_to_death
 demo$t.os[is.na(demo$t.os)] <- demo$days_to_last_followup[is.na(demo$t.os)]
-demo$t.rfs <- demo$days_to_tumor_recurrence
-demo$t.rfs[is.na(demo$t.rfs)] <- demo$days_to_last_followup[is.na(demo$t.rfs)]
 demo$e.rfs <- as.numeric(!is.na(demo$days_to_tumor_recurrence))
 demo$e.rfs[is.na(demo$t.rfs)] <- NA
+demo$t.rfs <- demo$days_to_tumor_recurrence
+demo$t.rfs[is.na(demo$t.rfs)] <- demo$days_to_last_followup[is.na(demo$t.rfs)]
 demo$hist_typ <- demo$histological_type
-demo$Stage <- ordered(demo$tumor_stage)
-demo$Grade <- sub("GX",NA, demo$tumor_grade)
-demo$Grade <- sub("GB","G0",demo$Grade)
-demo$Grade <- ordered(demo$Grade)
+demo$stage <- ordered(demo$tumor_stage)
+demo$stage <- sub('^IA$', "1",demo$stage)
+demo$stage <- sub('^IB$', "1",demo$stage)
+demo$stage <- sub('^IC$', "1",demo$stage)
+demo$stage <- sub('^IIA$', "2", demo$stage)
+demo$stage <- sub('^IIB$', "2", demo$stage)
+demo$stage <- sub('^IIC$', "2", demo$stage)
+demo$stage <- sub('^IIIA$', "3", demo$stage)
+demo$stage <- sub('^IIIB$', "3", demo$stage)
+demo$stage <- sub('^IIIC$', "3", demo$stage)
+demo$stage <- sub("IV", "4", demo$stage)
+demo$grade <- sub("GX",NA, demo$tumor_grade)
+demo$grade <- sub("GB","0",demo$grade)
+demo$grade <- sub("G1","1",demo$grade)
+demo$grade <- sub("G2","2",demo$grade)
+demo$grade <- sub("G3","3",demo$grade)
+demo$grade <- ordered(demo$grade)
+demo$debulking.stage <- NA
+
+setwd("/common/projects/trisch/Ovarian_cancer/tcga/data")
+fileAnno <- read.table("file_manifest.txt", sep = "\t", header = TRUE)
+rowDemo <- rownames(demo)
+
+for(i in seq(from=1, to=length(rowDemo), by=1)) {
+  
+  if(rowDemo[i] %in% substr( fileAnno$Sample, 1 , 12) ){
+    demo$sample.name[i] <- substring(fileAnno$File.Name[ match(rowDemo[i],substr( fileAnno$Sample, 1 , 12) ) ], 1)
+  } else {
+    demo$sample.name[i] <- NA
+  }
+}
+
 
 #patient annotation 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data")
@@ -105,7 +134,7 @@ for(i in seq(from=1, to=length(dataCol), by=1)) {
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/")
 
-save(list=c("data","demo"), compress=TRUE, file="tcga.RData")
+save(list=c("data","demo", "annot"), compress=TRUE, file="tcga.RData")
 
 write.csv(annot, file = "annot.csv")
 write.csv(data, file = "data.csv")
