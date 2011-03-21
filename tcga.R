@@ -12,12 +12,11 @@ step <- 20
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data/Expression-Genes/BI__HT_HG-U133A/Level_1")
 
-direc<-list.files()
-
+direc<-list.celfiles()
+dat <- NULL
 for(i in seq(from=1, to=length(direc), by=step)) {
 
-  if(i+step>=length(direc)) k=length(direc) 
-  else k=i+step-1
+  if(i+step>=length(direc)) { k <- length(direc) } else { k <- i+step-1 }
 
   print(direc[i:k])
   aBatch <- read.affybatch(filenames=direc[i:k]) 
@@ -25,15 +24,12 @@ for(i in seq(from=1, to=length(direc), by=step)) {
   normExpress <- coefs(frmaBatch) 
   transExpress <- t(normExpress)
 
-  if(!exists("dat")){ 
-    dat <- transExpress    
-  }
-  else  dat <- rbind(dat,transExpress)
+  dat <- rbind(dat,transExpress)
 }
 
 data<-dat
 
-# clinical data
+## clinical data
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/Clinical/BCR")
 
@@ -88,7 +84,7 @@ for(i in seq(from=1, to=length(rowDemo), by=1)) {
 }
 
 
-#patient annotation 
+## patient annotation 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data")
 
 fileAnno <- read.table("file_manifest.txt", sep = "\t", header = TRUE)
@@ -102,7 +98,7 @@ for(i in seq(from=1, to=length(rowData), by=1)) {
 }
 
 
-#gene annotation
+## gene annotation
 dataCol <- colnames(data)
 
 ensembl<- useMart("ensembl", dataset="hsapiens_gene_ensembl")
