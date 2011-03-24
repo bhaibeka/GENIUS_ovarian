@@ -1,5 +1,5 @@
 load("DAT.RData")
-pdf("myboxplot.pdf", width=100, height=8)
+pdf("tothill_boxplot.pdf", width=100, height=8)
 boxplot(data, names=rep("",nrow(data)), outline=FALSE, use.cols=FALSE)
 text(seq(1, nrow(data), by=1), par("usr")[3] - 0.2, labels = rownames(data), srt = 90, pos = 2, xpd = TRUE, cex=0.7)
 dev.off()
