@@ -13,10 +13,11 @@ step <- 20
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data/Expression-Genes/BI__HT_HG-U133A/Level_1")
 
 direc<-list.celfiles()
-dat <- NULL
+
 for(i in seq(from=1, to=length(direc), by=step)) {
 
-  if(i+step>=length(direc)) { k <- length(direc) } else { k <- i+step-1 }
+  if(i+step>=length(direc)) k=length(direc) 
+  else k=i+step - 1
 
   print(direc[i:k])
   aBatch <- read.affybatch(filenames=direc[i:k]) 
@@ -24,12 +25,15 @@ for(i in seq(from=1, to=length(direc), by=step)) {
   normExpress <- coefs(frmaBatch) 
   transExpress <- t(normExpress)
 
-  dat <- rbind(dat,transExpress)
+  if(!exists("dat")){ 
+    dat <- transExpress    
+  }
+  else  dat <- rbind(dat,transExpress)
 }
 
 data<-dat
 
-## clinical data
+# clinical data
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/Clinical/BCR")
 
@@ -70,6 +74,7 @@ demo$grade <- sub("G3","3",demo$grade)
 demo$grade <- ordered(demo$grade)
 demo$debulking.stage <- NA
 
+
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data")
 fileAnno <- read.table("file_manifest.txt", sep = "\t", header = TRUE)
 rowDemo <- rownames(demo)
@@ -84,7 +89,7 @@ for(i in seq(from=1, to=length(rowDemo), by=1)) {
 }
 
 
-## patient annotation 
+#patient annotation 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/data")
 
 fileAnno <- read.table("file_manifest.txt", sep = "\t", header = TRUE)
@@ -97,17 +102,23 @@ for(i in seq(from=1, to=length(rowData), by=1)) {
   }
 }
 
+#sort out patient without expression data
 
-## gene annotation
+demo <- demo[rownames(demo) %in% rownames(data), ]
+data <- data[rownames(data)  %in% rownames(demo), ]
+
+#gene annotation
 dataCol <- colnames(data)
 
 ensembl<- useMart("ensembl", dataset="hsapiens_gene_ensembl")
-genes <- getGene( id = dataCol, type = "affy_hg_u133a", mart = ensembl)
+genes <- getBM(attributes = c("affy_hg_u133a", "hgnc_symbol", "ensembl_gene_id"), filters = "affy_hg_u133a", values = dataCol, mart = ensembl)
 
-annot <- data.frame("gene.symbol"= dataCol, "ensembl.id" = dataCol)
+annot <- matrix(data="NULL", ncol = 2, nrow = length(dataCol))
+colnames(annot) <- c("gene.symbol", "ensembl.id")
+rownames(annot)<- as.character(dataCol)
+annot <- as.data.frame(annot)
 annot$gene.symbol <- as.character(annot$gene.symbol)
 annot$ensembl.id <- as.character(annot$ensembl.id)
-rownames(annot)<- as.character(dataCol)
 
 for(i in seq(from=1, to=length(dataCol), by=1)) {
   
@@ -119,14 +130,17 @@ for(i in seq(from=1, to=length(dataCol), by=1)) {
    
       if(genes$hgnc_symbol[tempPos] == "") {   
          annot$gene.symbol[i] <- NA
-      } else  annot$gene.symbol[i] <- genes$hgnc_symbol[tempPos]     
+      } else { 
+         annot$gene.symbol[i] <- genes$hgnc_symbol[tempPos]  
+      } 
       
       if(genes$ensembl_gene_id[tempPos] == "") {   
          annot$ensembl.id[i] <- NA
-      } else  annot$ensembl.id[i] <- genes$ensembl_gene_id[tempPos]     
+      } else {  
+         annot$ensembl.id[i] <- genes$ensembl_gene_id[tempPos]     
+      }
    }
 }
-
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga/")
 
@@ -135,6 +149,11 @@ save(list=c("data","demo", "annot"), compress=TRUE, file="tcga.RData")
 write.csv(annot, file = "annot.csv")
 write.csv(data, file = "data.csv")
 write.csv(demo, file = "demo.csv")
+
+pdf("tcga_boxplot.pdf", width=100, height=8)
+boxplot(data, names=rep("",nrow(data)), outline=FALSE, use.cols=FALSE)
+text(seq(1, nrow(data), by=1), par("usr")[3] - 0.2, labels = rownames(data), srt = 90, pos = 2, xpd = TRUE, cex=0.7)
+dev.off()
 
 rm(list = ls(all = TRUE))
 
