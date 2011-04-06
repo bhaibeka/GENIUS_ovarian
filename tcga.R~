@@ -1,0 +1,40 @@
+
+library(affy)
+library(frma)
+
+load("GEO_HGU133PLUS2_GPL570.RData")
+
+demo <- read.csv("expO_demo.csv", stringsAsFactors=FALSE)
+dimnames(demo)[[1]] <- demo[ ,1]
+
+demo <- demo[demo[ , "tumor.site"] == "breast", , drop=FALSE]
+
+fn <- demo[ , "filename"]
+bb <- demo[ , "batch"]
+bbu <- sort(unique(bb))
+#rrt <- read.affybatch(filenames=paste("../", fn[1], sep=""))
+#pn <- dimnames(coefs(fitPLM(object=rrt)))[[1]]
+data <- data.bin <- NULL
+for(i in 1:length(bbu)) { ## for each batch
+	cat(sprintf("\nProcessing batch %i/%i ...\n", bbu[i], length(bbu)))
+	bbix <- bb == bbu[i]
+	## fRMA
+	abatch <- read.affybatch(filenames=paste("../", fn[bbix], sep=""))
+	rr <- frma(object=abatch, summarize="robust_weighted_average", verbose=TRUE)
+	save(list=ls(), compress=TRUE, file="temp_breast.RData")
+	rr2 <- coefs(rr)
+	#dimnames(rr2)[[1]] <- pn
+	rr2 <- new("ExpressionSet", exprs=rr2, phenoData=phenoData(rr), annotation=annotation(rr), experimentData=description(rr))
+	dd <- t(exprs(rr2))
+	## gene expression barcode
+	tt <- t(barcode(object=rr2, output="binary"))
+	dd.bin <- matrix(NA, nrow=nrow(dd), ncol=ncol(dd), dimnames=dimnames(dd))
+	dd.bin[ , dimnames(tt)[[2]]] <- tt 
+	## row and column names
+	dimnames(dd)[[1]] <- dimnames(dd.bin)[[1]] <- unlist(lapply(strsplit(unlist(lapply(strsplit(fn[bbix], "/"), function(x) { return(	x[length(x)]) })), "[.]"), function(x) { return(x[1]) }))
+	data <- rbind(data, dd)
+	data.bin <- rbind(data.bin, dd.bin)
+}
+data <- data[dimnames(demo)[[1]], dimnames(annot)[[1]]]
+data.bin <- data.bin[dimnames(demo)[[1]], dimnames(annot)[[1]]]
+save(list=c("data", "data.bin", "demo", "annot"), compress=TRUE, file="expO_breast_frma.RData")

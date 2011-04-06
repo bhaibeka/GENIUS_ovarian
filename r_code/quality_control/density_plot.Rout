@@ -1,0 +1,68 @@
+
+R version 2.12.1 (2010-12-16)
+Copyright (C) 2010 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> rm(list = ls(all = TRUE))
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/plots")
+> 
+> pdf("distribution_tcga_dressman_tothill.pdf", width=10, height=10)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/tcga/")
+> load("tcga_analyze.RData")
+> plot(density(cindex.all[,1]), col="blue", xlim=c(0.2,0.8), main= "", lwd=2)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/dressman2007/")
+> load("dressman_analyze.RData")
+> lines(density(cindex.all[,1]), col="red",  lwd=2)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/tothill2008")
+> load("tothill_analyze.RData")
+> lines(density(cindex.all[,1]), col="green", lwd=2)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/spentzos2011/upenn")
+> load("upenn_analyze.RData")
+> lines(density(cindex.all[,1]), col="orange", lwd=2)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/spentzos2011/bidmc66")
+> load("bidmc66_analyze.RData")
+> lines(density(cindex.all[,1]), col="chocolate4", lwd=2)
+> 
+> setwd("/common/projects/trisch/Ovarian_cancer/spentzos2011/bidmc55")
+> load("bidmc55_analyze.RData")
+> lines(density(cindex.all[,1]), col="yellow2", lwd=2)
+> 
+> 
+> legend(x="topright", c("TCGA","Dressman", "Tothill", "Spentzos UPENN", "Spentzos BIDMC66","Spentzos BIDMC55" ), col= c("blue", "red", "green", "orange", "chocolate4","yellow2"),   lty=1, lwd=2)
+> title(main = "Distribution of TCGA, Dressman, Tothill")
+> abline( v=0.5)
+> 
+> dev.off()
+null device 
+          1 
+> 
+> rm(list = ls(all = TRUE))
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 10.000   0.533  10.552 
