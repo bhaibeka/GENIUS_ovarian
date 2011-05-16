@@ -56,9 +56,9 @@ demo$e.os <- as.numeric(demo[,3] == "DOD")
 demo$t.os <- as.numeric(demo[,4]) * 365
 demo$e.rfs <- NA
 demo$t.rfs <- NA
-demo$hist_typ <- NA
-demo$stage <- NA
-demo$grade <- NA
+demo$hist_typ <- "serous"
+demo$stage <- 3.5
+demo$grade <- 3.5
 demo$debulking.stage <- demo[,2]
 demo$debulking.stage <- sub("Optimal", 1 ,  demo$debulking.stage ) 
 demo$debulking.stage <- sub("Suboptimal", 0 ,  demo$debulking.stage ) 
