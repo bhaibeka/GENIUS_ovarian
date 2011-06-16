@@ -3,8 +3,9 @@ rm(list = ls(all = TRUE))
 library(survcomp)
 library(genefu)
 
+savewd <- getwd()
 nfold <- 10
-setseed <- 3
+setseed <- 54321
 filter.hgs <- TRUE
 sig.size.s1 <- 140
 sig.size.s2 <- 180
@@ -16,7 +17,7 @@ censorTime <- 10
 trainSet <- "tcga"
 
 # roc curve plot
-plot<- TRUE
+plot <- FALSE
 
 # mapping
 mapping <- TRUE
@@ -66,6 +67,8 @@ load("classification.RData")
 
 setwd("/common/projects/trisch/Ovarian_cancer/tcga2011")
 load("tcga.RData")
+
+setwd(savewd)
 
 #filter hgs patients
 if(filter.hgs) {
@@ -134,8 +137,8 @@ s.ix.sizes <- NULL
 #nfold loop
 for (i in 1:nfold) {
    saveres <- saveres_classi
-   sig.size.s1 <- 140
-   sig.size.s2 <- 180
+   #sig.size.s1 <- 140
+   #sig.size.s2 <- 180
 
    #index of samples to hold out
    if(i == nfold) {
@@ -171,9 +174,7 @@ for (i in 1:nfold) {
   
 
 ### bi-model ###
-
-
-   parameter <- NULL
+	parameter <- NULL
    for(j in 1:length(dataSets)) {
 
 
@@ -286,7 +287,7 @@ for (i in 1:nfold) {
      variance <- variance / sum(weights.cases)
       return(variance)
    }
-
+	## you could use weighted.mean.var in genefu
 
    ###### reduce dimensionality via most variant genes ##############
    genIdUniq <- annot[ , "ensembl.id"]
@@ -447,8 +448,6 @@ for (i in 1:nfold) {
       data.sig <- data[ ,  map.probes ]
       sig.new <- classi.sig[ classi.sig[, 2] %in% map.genes, ]
 
-      #brings annot table in same order like the signature
-
     
       #score calculation
 
@@ -461,9 +460,8 @@ for (i in 1:nfold) {
       class.score.unscaled <- class.score 
    
       class.score <- rescale(x = class.score, q = 0.05, na.rm = TRUE)
-
-      class.cluster <- Mclust(class.score, G=2 )
-
+	
+	class.cluster <- Mclust(class.score, G=2 )
       pdf( sprintf("cross_validation/fold_%i/classification/%s/class_plot_test.pdf", i, saveres) , width=12, height=8) 
       
       par(mfrow=c(2,3))
@@ -535,10 +533,7 @@ for (i in 1:nfold) {
          data.sig <- data[ , sig[ , 1] ]
          sig.new <- sig   
       }
- 
-      #brings annot table in same order like the signature
 
-    
       #score calculation
 
       if( length(map.probes) >= 2) {
@@ -557,7 +552,7 @@ for (i in 1:nfold) {
  
    saveres <-  saveres_predict   
 
-   #### signicture size, if == 0 the optimal size is used #### 
+   #### signature size, if == 0 the optimal size is used #### 
    sig.probes.s1 <- ranking.sel.full.s1[1:sig.size.s1, "probe"]
    sig.s1 <- cbind("probe"=sig.probes.s1, "ensembl.id"=annot[sig.probes.s1, "ensembl.id"], "coefficient"=sign(as.numeric(ranking.sel.full.s1[1:sig.size.s1, "c.index"]) - 0.5))
    
@@ -592,8 +587,9 @@ for (i in 1:nfold) {
          risk.s1 <- risk.score(sig = sig.s1, data = data, annot = annot, do.mapping = mapping)
          if( is.na(risk.s1[1]) ){ next }
          risk.s1.unscaled <-  risk.s1
-         risk.s1 <- (rescale(x = risk.s1, q = 0.05, na.rm = TRUE) - 0.5) * 2
-    
+		## skip rescaling        
+ 		risk.s1 <- (rescale(x = risk.s1, q = 0.05, na.rm = TRUE) - 0.5) * 2
+    	
          risk.s2 <- risk.score(sig = sig.s2, data = data, annot = annot, do.mapping = mapping)
          if( is.na(risk.s2[1]) ){ next }
          risk.s2.unscaled <-  risk.s2
@@ -606,7 +602,7 @@ for (i in 1:nfold) {
 
          hazard.sig1 <- hazard.ratio(x=risk.full[  subtype.prob$angiogenic >= 0.5  ], surv.time=survd[[1]][  subtype.prob$angiogenic >= 0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic >= 0.5  ], na.rm=TRUE)[1:6]
  
-         tdrr.sig1 <- tdrocc(x=risk.full[  subtype.prob$angiogenic >= 0.5  ], surv.time=survd[[1]][  subtype.prob  $angiogenic >= 0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic >= 0.5  ], time=10, na.rm=TRUE)
+         #tdrr.sig1 <- tdrocc(x=risk.full[  subtype.prob$angiogenic >= 0.5  ], surv.time=survd[[1]][  subtype.prob  $angiogenic >= 0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic >= 0.5  ], time=10, na.rm=TRUE)
    
           if(plot) {
              pdf(sprintf("cross_validation/fold_%i/roc_sig1_%s_%s_%s.pdf", i, saveres ,dataSets[l],sig.size1,trainSet ), width=10, height=10)
@@ -620,7 +616,7 @@ for (i in 1:nfold) {
 
          hazard.sig2 <- hazard.ratio(x=risk.full[  subtype.prob$angiogenic < 0.5  ], surv.time=survd[[1]][  subtype.prob$angiogenic  <  0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic  <  0.5  ], na.rm=TRUE)[1:6]
  
-         tdrr.sig2 <- tdrocc(x=risk.full[  subtype.prob$angiogenic  <  0.5  ], surv.time=survd[[1]][  subtype.prob$angiogenic  <  0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic  <  0.5  ], time=10, na.rm=TRUE)
+         #tdrr.sig2 <- tdrocc(x=risk.full[  subtype.prob$angiogenic  <  0.5  ], surv.time=survd[[1]][  subtype.prob$angiogenic  <  0.5  ], surv.event=survd[[2]][  subtype.prob$angiogenic  <  0.5  ], time=10, na.rm=TRUE)
   
          if(plot) {
             pdf(sprintf("cross_validation/fold_%i/roc_sig2_%s_%s_%s.pdf", i, saveres , dataSets[l],sig.size2,trainSet ), width=10, height=10)
@@ -633,7 +629,7 @@ for (i in 1:nfold) {
          cindex <- concordance.index(x=risk.full, surv.time=survd[[1]], surv.event=survd[[2]], outx=TRUE, method="noether", na.rm=TRUE)[1:5]
   
          hazard <- hazard.ratio(x=risk.full, surv.time=survd[[1]], surv.event=survd[[2]], na.rm=TRUE)[1:6]
-         tdrr <- tdrocc(x=risk.full, surv.time=survd[[1]], surv.event=survd[[2]], time=10, na.rm=TRUE)
+         #tdrr <- tdrocc(x=risk.full, surv.time=survd[[1]], surv.event=survd[[2]], time=10, na.rm=TRUE)
   
          if(plot) {
            pdf(sprintf("cross_validation/fold_%i/roc_full_%s_%s_%s.pdf", i, saveres , dataSets[l],sig.size1,sig.size2,trainSet ), width=10, height=10)
@@ -662,12 +658,11 @@ for (i in 1:nfold) {
    cindex.all.save <- cbind( cindex.all.save, cindex)   
 
    s.ix.save <- c( s.ix.save, s.ix)
-
    s.ix.sizes <-  c(s.ix.sizes, length(s.ix) )
 
    save( list =c("risk.s1.save", "risk.s2.save", "risk.full.save", "cindex.sig1.save", "cindex.sig2.save",  "cindex.all.save", "s.ix.save", "s.ix.sizes", "nfold"), compress=TRUE, file="cross_validation/cross_validation.RData" )
 
-browser()  
+#browser()  
 
 #####################################################
 ######## No Subtypes ##################################
@@ -863,7 +858,7 @@ browser()
    sig.s1 <- cbind("probe"=sig.probes.s1, "ensembl.id"=annot[sig.probes.s1, "ensembl.id"], "coefficient"=sign(as.numeric(ranking.sel.full.s1[1:sig.size.s1, "c.index"]) - 0.5))
 
 
-#annotation of the probs from tew siganture
+#annotation of the probs from tew signature
 
    sig.s1 <- saveSig.s1 
 
