@@ -19,6 +19,16 @@ class.score <- NULL
 
 for(i in 1:length(dataSets)) {
 
+   if(saveres == "all") {
+
+      setwd(sprintf("/common/projects/trisch/Ovarian_cancer/%s/classification/high_grade_stage", dataSets[i])) 
+   load("subtype_classi.RData")
+    
+      ma <- quantile(class.score.unscaled, probs = 1 - (0.05/2), na.rm = TRUE)
+      mi <- quantile(class.score.unscaled, probs = 0.05/2, na.rm = TRUE)   
+   }
+   
+
    # loading of the dataset object
    setwd( sprintf("/common/projects/trisch/Ovarian_cancer/%s", dataSets[i]) )
    load( sprintf("%s.RData", substring(dataSets[i], 1 , nchar(dataSets[i])-4 )) )
@@ -93,14 +103,17 @@ for(i in 1:length(dataSets)) {
    #score calculation
 
    data.sig <- t( t( data.sig ) * as.numeric( sig.new[,3] ))
-   class.score <- apply(X=data.sig, MARGIN=1, FUN=function(x) { 
+   class.score.unscaled <- apply(X=data.sig, MARGIN=1, FUN=function(x) { 
       temp.sum <- sum(x, na.rm=TRUE)
       temp.sum  <- temp.sum / length( x[!is.na(x)] )
       return(temp.sum) } )
 
-   class.score.unscaled <- class.score 
-   
-   class.score <- rescale(x = class.score, q = 0.05, na.rm = TRUE)
+   if(saveres == "all" && dataSets[i] != "marquez2005") {
+      class.score <- (class.score.unscaled - mi)/(ma - mi)
+   } else {
+
+      class.score <- rescale(x = class.score.unscaled, q = 0.05, na.rm = TRUE)
+   }
 
    class.cluster <- Mclust(class.score, G=2, modelNames="E" )
 

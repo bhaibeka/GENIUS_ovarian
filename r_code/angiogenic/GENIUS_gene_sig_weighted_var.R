@@ -9,8 +9,8 @@ setwd("/common/projects/trisch/Ovarian_cancer/tcga2011")
 load("tcga.RData")
 
 
-###### directors for results ############
-saveres <- "genesig_5mostvar_weighted_all_0621"
+###### directory for results ############
+saveres <- "genesig_5mostvar_weighted_all_0630"
 
 if(!file.exists(saveres)) { system(sprintf("mkdir %s", saveres)) }
 
@@ -24,6 +24,10 @@ propv <- 0.05
 censorTime <- 10
 # seed #
 setseed <- 534565
+
+if (!missing(setseed)) {
+   set.seed(setseed)
+}
 
 ###### weighted varation #########
 weight.var <- function(x, weights) {

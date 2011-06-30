@@ -28,18 +28,9 @@ parameter <- class.cluster$parameter
 
 for(i in 1:length(dataSets)) {
  
-   print(dataSets[i]) 
-   setwd(sprintf("/common/projects/trisch/Ovarian_cancer/%s/classification/all", dataSets[i])) 
-   load("subtype_classi.RData")
-    
-   ma <- quantile(class.score.unscaled, probs = 1 - (0.05/2), na.rm = TRUE)
-   mi <- quantile(class.score.unscaled, probs = 0.05/2, na.rm = TRUE)
-   
    setwd(sprintf("/common/projects/trisch/Ovarian_cancer/%s/classification/%s", dataSets[i], saveres)) 
    load("subtype_classi.RData")
    file.content <- load("subtype_classi.RData")
-
-   class.score <- (class.score.unscaled - mi)/(ma - mi)
 
    emclassi <- estep(modelName="E", data=class.score, parameters=parameter)
    

@@ -10,7 +10,7 @@ load("tcga.RData")
 
 
 ###### directors for results ############
-saveres <- "genesig_stemlike_5mostvar_weighted_0613_all"
+saveres <- "genesig_stemlike_5mostvar_weighted_all_0630"
 
 if(!file.exists(saveres)) { system(sprintf("mkdir %s", saveres)) }
 
@@ -22,6 +22,13 @@ resamprop <- 0.9
 propv <- 0.05
 # censor time in years#
 censorTime <- 10
+
+setseed <- 534565
+
+if (!missing(setseed)) {
+   set.seed(setseed)
+}
+
 
 ###### weighted varation #########
 weight.var <- function(x, weights) {

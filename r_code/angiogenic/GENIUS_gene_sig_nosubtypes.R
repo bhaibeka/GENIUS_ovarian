@@ -31,7 +31,7 @@ if(FALSE) {
 
 
 ###### directors for results ############
-saveres <- "genesig_5mostvar_nosubtypes_all_0620"
+saveres <- "genesig_5mostvar_nosubtypes_all_0630"
 if(!file.exists(saveres)) { system(sprintf("mkdir %s", saveres)) }
 
 # resampling steps #
@@ -45,6 +45,9 @@ censorTime <- 10
 # seed #
 setseed <- 534565
 
+if (!missing(setseed)) {
+   set.seed(setseed)
+}
 ###### reduce dimensionality via most variant genes ##############
 genIdUniq <- annot[ , "ensembl.id"]
 names(genIdUniq) <- rownames(annot) 

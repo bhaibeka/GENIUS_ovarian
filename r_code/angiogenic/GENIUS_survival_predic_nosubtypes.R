@@ -1,4 +1,5 @@
 #USAGE: R CMD BATCH GENIUS_survival_predic.R '--args SIGNATURESIZE(for using optimal size enter 1) PATIENT.TYPE SAVERES_PREDICTION_ALL SAVERES_PREDICTION_HGS DATASET_1_FOLDER DATASET_2_FOLDER ...' GENIUS_survivl_predic_nosubtypes.R
+#INFO: You have to change the source for the prognostic signature e.g. genesig_5mostvar_nosubtypes_all_0630, see ## CHANGE HERE GENE SIGANTURE ####
 
 rm(list = ls(all = TRUE))
 
@@ -98,9 +99,9 @@ if(length(args)==0){
     }
 }
 
-#### signicture size, if == 0 the optimal size is used #### 
 
-setwd("/common/projects/trisch/Ovarian_cancer/tcga2011/genesig_5mostvar_nosubtypes_all_0620")
+## CHANGE HERE GENE SIGANTURE ####
+setwd("/common/projects/trisch/Ovarian_cancer/tcga2011/genesig_5mostvar_nosubtypes_all_0630")
 load("gene_sigs.RData")
 
 #annotation of the probs from tew siganture
