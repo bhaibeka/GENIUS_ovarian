@@ -46,7 +46,7 @@ demo$grade <- 3.5
 demo$debulking.stage <- demo$Optimal.Debulking.
 demo$debulking.stage <- sub("No", 0, demo$debulking.stage )
 demo$debulking.stage <- sub("Yes", 1, demo$debulking.stage )
-
+demo$debulking.stage <- sub("Unknown", NA, demo$debulking.stage )
 
 rm.duplicates <- !grepl("rep2", rownames(demo))
 demo<- demo[ rm.duplicates , ] 
