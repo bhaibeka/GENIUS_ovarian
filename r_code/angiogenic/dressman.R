@@ -53,7 +53,9 @@ demo$stage <- demo$Stage
 demo$grade <- demo$Grade
 demo$debulking.stage <- demo$Debulk
 demo$debulking.stage <-  sub('^Optimal\\s*.*', "1",demo$debulking.stage, perl = TRUE)	
-demo$debulking.stage <- sub('^Suboptimal\\s*.*', "0",demo$debulking.stage, perl= TRUE)
+demo$debulking.stage <-  sub('^O', "1",demo$debulking.stage, perl = TRUE)
+demo$debulking.stage <-  sub('^Subptimal\\s*.*', "0",demo$debulking.stage, perl = TRUE)
+demo$debulking.stage <- sub('^S', "0",demo$debulking.stage, perl= TRUE)
 
 demoRow <- rownames(demo)
 demo$sample.name <- NULL
